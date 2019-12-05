@@ -1,2 +1,2 @@
 # MindBenders
-Project Proposal INFM 600
+Analysis of Google Playstore Apps
