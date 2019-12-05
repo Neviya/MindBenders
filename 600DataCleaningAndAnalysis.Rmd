@@ -1,0 +1,102 @@
+---
+title: "Data Cleaning and Analysis "
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+appdata = read.csv(file.choose())
+```
+```{r}
+appdata$Reviews <- as.numeric(as.character(appdata$Reviews))
+```
+```{r}
+install.packages("stringr")               # Install stringr package
+library("stringr") 
+
+
+```
+## To remove + symbol from number of installs.
+```{r}
+appdata$Installs <- str_remove_all(appdata$Installs,"[,+]")
+appdata$Installs <- as.factor(appdata$Installs)
+```
+## Removing M and K from size.
+```{r}
+library("stringr") 
+mega_octets <- as.numeric(str_remove_all(appdata$Size, "[,M]"))   
+mega_octets[is.na(mega_octets)] <- 0
+kilo_octets <- as.numeric(str_remove_all(appdata$Size, "[,K]")) /1024 
+kilo_octets[is.na(kilo_octets)] <- 0
+size_octets <- kilo_octets + mega_octets
+size_octets[size_octets == 0] <- NA
+appdata$Size <- size_octets
+```
+## Remove dollar sign
+```{r}
+library("stringr")
+appdata$Price <- as.numeric(str_remove_all(appdata$Price, "\\$"))
+```
+
+```{r results = 'hide'}
+library("stringr")
+#appdata <- appdata[-which(googleplaystore_one_occurence$Content.Rating=='Unrated'),] 
+```
+## T test for paid and unpaid apps
+```{r}
+paidApps = subset(appdata, appdata$Type!="Free")
+freeApps = subset(appdata, appdata$Type == "Free")
+
+```
+```{r}
+t.test(paidApps$Rating, freeApps$Rating)
+```
+
+## T test for restricted and unrestricted apps
+```{r}
+restricted = subset(appdata, appdata$Content.Rating!="Everyone")
+Unrestricted = subset(appdata, appdata$Content.Rating=="Everyone")
+
+```
+
+```{r}
+
+t.test(restricted$Rating, Unrestricted$Rating)
+
+```
+## Prediction for number of installs
+```{r}
+linearmodel =lm(appdata$Installs ~ appdata$Category+appdata$Price)
+summary(linearmodel)
+```
+## Give values and test the result 
+```{r}
+NewAppCategory = 
+NewAppPrice = 
+CategoryIntercept = 228268      
+PriceIntercept = -60848      
+Intercept = 11721789    
+
+NewAppNo_of_Installs = Intercept+ (NewAppCategory*CategoryIntercept) + (NewAppPrice*PriceIntercept)
+NewAppNo_of_Installs
+```
+## Prediction for app ratings
+```{r}
+linearmodel =lm(appdata$Rating ~ appdata$Category+appdata$Price)
+summary(linearmodel)
+```
+## Give values and test the result 
+```{r}
+NewAppCategory = 2
+NewAppPrice = 0
+CategoryIntercept = -0.0021746      
+PriceIntercept = -0.0007295      
+Intercept = 4.2288934   
+
+NewAppNo_Rating = Intercept+ (NewAppCategory*CategoryIntercept) + (NewAppPrice*PriceIntercept)
+NewAppNo_Rating
+```
+
